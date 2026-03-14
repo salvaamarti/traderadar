@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TradeRadar - Sistema de Alertas de Trading en Tiempo Real">
+    <title>TradeRadar • Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=2">
+    <!-- SortableJS for Drag and Drop -->
+    <script src="/static/Sortable.min.js"></script>
+</head>
+<body>
+    <!-- ─── Header ──────────────────────────────────── -->
+    <header class="header" id="main-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">📡</span>
+                <h1>TradeRadar</h1>
+            </div>
+            <div class="status-badge" id="status-badge">
+                <span class="status-dot"></span>
+                <span>Conectando...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-ghost" id="btn-refresh" title="Actualizar datos">
+                <span class="btn-icon">🔄</span>
+            </button>
+            <button class="btn btn-ghost" id="btn-trigger-analysis" title="Ejecutar análisis">
+                <span class="btn-icon">📊</span>
+                <span>Analizar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ─── Main Content ────────────────────────────── -->
+    <main class="main-content">
+
+        <!-- ─── Portfolio Summary Cards ─────────────── -->
+        <section class="summary-cards" id="summary-cards">
+            <div class="card summary-card">
+                <div class="card-label">Total Invertido</div>
+                <div class="card-value" id="total-invested">€0,00</div>
+                <div class="card-sub">Capital inicial</div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-label">Valor Actual</div>
+                <div class="card-value" id="total-value">€0,00</div>
+                <div class="card-sub">Valor de mercado</div>
+            </div>
+            <div class="card summary-card highlight">
+                <div class="card-label">P&L Total</div>
+                <div class="card-value" id="total-pnl">€0,00</div>
+                <div class="card-sub" id="total-pnl-pct">0.00%</div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-label">Activos Monitorizados</div>
+                <div class="card-value" id="watched-count">0</div>
+                <div class="card-sub">En watchlist</div>
+            </div>
+        </section>
+
+        <!-- ─── Two Column Layout ──────────────────── -->
+        <div class="grid-layout">
+
+            <!-- ─── Portfolio Table ────────────────── -->
+            <section class="card table-card" id="portfolio-section">
+                <div class="card-header">
+                    <h2>💼 Mi Cartera</h2>
+                    <button class="btn btn-primary" id="btn-add-position">
+                        <span>+</span> Añadir Posición
+                    </button>
+                </div>
+                <div class="table-container">
+                    <h3 class="group-title">🪙 Criptomonedas</h3>
+                    <table id="crypto-table" class="portfolio-table">
+                        <thead>
+                            <tr>
+                                <th>Activo</th>
+                                <th>Cantidad</th>
+                                <th>Precio Compra</th>
+                                <th>Precio Actual</th>
+                                <th>Invertido</th>
+                                <th>Valor</th>
+                                <th>P&L</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crypto-body">
+                            <tr class="empty-row">
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <span>📭</span>
+                                        <p>No hay criptomonedas en cartera.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="group-title mt-4">📈 Acciones</h3>
+                    <table id="stock-table" class="portfolio-table">
+                        <thead>
+                            <tr>
+                                <th>Activo</th>
+                                <th>Cantidad</th>
+                                <th>Precio Compra</th>
+                                <th>Precio Actual</th>
+                                <th>Invertido</th>
+                                <th>Valor</th>
+                                <th>P&L</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stock-body">
+                            <tr class="empty-row">
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <span>📭</span>
+                                        <p>No hay acciones en cartera.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ─── Signals & Alerts ───────────────── -->
+            <section class="card signals-card" id="signals-section">
+                <div class="card-header">
+                    <h2>📊 Señales de Trading</h2>
+                    <div class="signal-legend">
+                        <span class="legend-item buy">🟢 Compra</span>
+                        <span class="legend-item hold">🟡 Mantener</span>
+                        <span class="legend-item sell">🔴 Venta</span>
+                    </div>
+                </div>
+                <div id="signals-container" class="signals-container">
+                    <div class="empty-state">
+                        <span>📡</span>
+                        <p>Ejecuta un análisis para ver señales.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ─── Prices & Alerts History ────────────── -->
+        <div class="grid-layout-bottom">
+            <!-- Live Prices -->
+            <section class="card" id="prices-section">
+                <div class="card-header">
+                    <h2>💰 Precios en Tiempo Real</h2>
+                    <button class="btn btn-ghost btn-sm" id="btn-add-watchlist">
+                        <span>+</span> Watchlist
+                    </button>
+                </div>
+                <div id="prices-container" class="prices-grid">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Cargando precios...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alert History -->
+            <section class="card" id="alerts-section">
+                <div class="card-header">
+                    <h2>🔔 Historial de Alertas</h2>
+                </div>
+                <div id="alerts-container" class="alerts-timeline">
+                    <div class="empty-state">
+                        <span>🔕</span>
+                        <p>Sin alertas recientes.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ─── Add Position Modal ──────────────────────── -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-add-position">
+            <div class="modal-header">
+                <h3>Registrar Compra</h3>
+                <button class="btn-close" id="btn-close-modal">&times;</button>
+            </div>
+            <form id="form-add-position">
+                <div class="form-group">
+                    <label for="input-symbol">Símbolo</label>
+                    <input type="text" id="input-symbol" placeholder="BTC, ETH, AAPL..." required>
+                </div>
+                <div class="form-group">
+                    <label for="input-name">Nombre</label>
+                    <input type="text" id="input-name" placeholder="Bitcoin, Apple Inc...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-type">Tipo</label>
+                        <select id="input-type">
+                            <option value="">Auto-detectar</option>
+                            <option value="crypto">Crypto</option>
+                            <option value="stock">Acción</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-coingecko-id">CoinGecko ID</label>
+                        <input type="text" id="input-coingecko-id" placeholder="bitcoin, ethereum...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-quantity">Cantidad</label>
+                        <input type="number" id="input-quantity" step="any" placeholder="0.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-buy-price">Precio de Compra (€)</label>
+                        <input type="number" id="input-buy-price" step="any" placeholder="45000" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="input-total-invested">Total Invertido (€)</label>
+                    <input type="number" id="input-total-invested" step="any" placeholder="Se calcula automáticamente">
+                    <small class="form-hint">Dejar vacío para calcular automáticamente (cantidad × precio)</small>
+                </div>
+                <div class="form-group">
+                    <label for="input-notes">Notas</label>
+                    <input type="text" id="input-notes" placeholder="Opcional...">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="btn-cancel-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar Compra</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── Edit Position Modal ─────────────────────── -->
+    <div class="modal-overlay" id="modal-edit-overlay">
+        <div class="modal" id="modal-edit-position">
+            <div class="modal-header">
+                <h3>Editar Posición</h3>
+                <button class="btn-close" id="btn-close-edit-modal">&times;</button>
+            </div>
+            <form id="form-edit-position">
+                <input type="hidden" id="edit-entry-id">
+                <div class="form-group">
+                    <label for="edit-symbol">Símbolo</label>
+                    <input type="text" id="edit-symbol" disabled>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-quantity">Cantidad</label>
+                        <input type="number" id="edit-quantity" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-buy-price">Precio de Compra (€)</label>
+                        <input type="number" id="edit-buy-price" step="any" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-total-invested">Total Invertido (€)</label>
+                    <input type="number" id="edit-total-invested" step="any" placeholder="Se calcula automáticamente">
+                    <small class="form-hint">Dejar vacío para calcular automáticamente (cantidad × precio)</small>
+                </div>
+                <div class="form-group">
+                    <label for="edit-notes">Notas</label>
+                    <input type="text" id="edit-notes" placeholder="Opcional...">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="btn-cancel-edit-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ─── Add Watchlist Modal ─────────────────────── -->
+    <div class="modal-overlay" id="modal-watchlist-overlay">
+        <div class="modal" id="modal-add-watchlist">
+            <div class="modal-header">
+                <h3>Añadir a Watchlist</h3>
+                <button class="btn-close" id="btn-close-watchlist-modal">&times;</button>
+            </div>
+            <form id="form-add-watchlist">
+                <div class="form-group">
+                    <label for="wl-symbol">Símbolo</label>
+                    <input type="text" id="wl-symbol" placeholder="ETH, SOL, TSLA..." required>
+                </div>
+                <div class="form-group">
+                    <label for="wl-name">Nombre</label>
+                    <input type="text" id="wl-name" placeholder="Ethereum, Tesla..." required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="wl-type">Tipo</label>
+                        <select id="wl-type">
+                            <option value="">Auto-detectar</option>
+                            <option value="crypto">Crypto</option>
+                            <option value="stock">Acción</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="wl-coingecko-id">CoinGecko ID</label>
+                        <input type="text" id="wl-coingecko-id" placeholder="ethereum, solana...">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="btn-cancel-watchlist">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Añadir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── Toast Notifications ─────────────────────── -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js?v=2"></script>
+</body>
+</html>
