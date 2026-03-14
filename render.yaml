@@ -2,6 +2,7 @@ services:
   - type: web
     name: traderadar
     env: python
+    plan: free
     region: frankfurt # Optional, choose closest to you
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT"
