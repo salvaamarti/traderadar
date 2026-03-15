@@ -10,7 +10,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.10.0
       - key: DATABASE_URL
-        value: postgresql://postgres.jidoclecxgvsqrciqwzx:Polmarti%231992@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
+        value: postgresql://postgres:GeNE5dyErULYS6Ty@db.ynfyofpnzwymhcyftjhj.supabase.co:5432/postgres?sslmode=require
       - key: TELEGRAM_BOT_TOKEN
         sync: false # Set this in the Render Dashboard
       - key: TELEGRAM_CHAT_ID
